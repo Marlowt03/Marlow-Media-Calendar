@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Firestore Connectivity Probe</title>
+  <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore-compat.js"></script>
+  <style>
+    body{font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding:24px; line-height:1.4;}
+    button{padding:10px 14px; border-radius:8px; border:1px solid #ccc; cursor:pointer; margin-right:10px}
+    pre{background:#0b1020; color:#e6edf3; padding:12px; border-radius:8px; overflow:auto}
+    .ok{color:#0b8b36} .err{color:#b00020}
+    .row{margin:12px 0}
+    input,textarea{width:100%; max-width:760px; padding:10px; border-radius:8px; border:1px solid #ccc; font-family:inherit}
+  </style>
+</head>
+<body>
+  <h1>Firestore Connectivity Probe</h1>
+  <p>This tiny page checks that your GitHub Pages origin can read/write the shared doc <code>dashboards/org-marlow-media</code>.</p>
+
+  <div class="row"><label>Document path:
+    <input id="docpath" value="dashboards/org-marlow-media" /></label>
+  </div>
+  <div class="row"><label>Payload to write (JSON):
+    <textarea id="payload" rows="6">{ "probe": true, "ts": 0 }</textarea></label>
+  </div>
+
+  <div class="row">
+    <button id="btnWrite">Write test</button>
+    <button id="btnRead">Read doc</button>
+    <button id="btnSeed">Seed big payload (chunk-like)</button>
+  </div>
+
+  <div id="log"></div>
+
+<script>
+  // === Your Firebase config (from earlier messages) ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaIF2is5_swIcz-QEogWRnE2OJX0xgaZc",
+    authDomain: "marlow-media-calendar.firebaseapp.com",
+    projectId: "marlow-media-calendar",
+    storageBucket: "marlow-media-calendar.appspot.com",
+    messagingSenderId: "664519075124",
+    appId: "1:664519075124:web:6380ee0e1ddb07b3c6f161"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  db.settings({ experimentalAutoDetectLongPolling: true });
+
+  function log(msg, cls){
+    const el = document.createElement('div');
+    el.className = cls || '';
+    el.innerHTML = msg;
+    document.getElementById('log').prepend(el);
+  }
+
+  async function writeTest(){
+    const path = document.getElementById('docpath').value.trim();
+    const data = JSON.parse(document.getElementById('payload').value || "{}");
+    data.ts = Date.now();
+    try{
+      await db.doc(path).set(data);
+      log("✅ Write OK @ " + path + " — ts=" + data.ts, 'ok');
+    }catch(e){
+      log("❌ Write failed: <pre>"+(e && e.message ? e.message : e)+"</pre>", 'err');
+    }
+  }
+
+  async function readDoc(){
+    const path = document.getElementById('docpath').value.trim();
+    try{
+      const snap = await db.doc(path).get();
+      if(!snap.exists){ log("ℹ️ Doc missing: " + path); return; }
+      log("📖 Read OK: <pre>"+JSON.stringify(snap.data(), null, 2)+"</pre>", 'ok');
+    }catch(e){
+      log("❌ Read failed: <pre>"+(e && e.message ? e.message : e)+"</pre>", 'err');
+    }
+  }
+
+  async function seedBig(){
+    // ~1.2MB json string to simulate large state
+    const big = { ts: Date.now(), filler: "x".repeat(1200000) };
+    const path = document.getElementById('docpath').value.trim();
+    try{
+      await db.doc(path).set(big);
+      log("✅ Big write OK ("+JSON.stringify(big).length+" bytes)", 'ok');
+    }catch(e){
+      log("❌ Big write failed: <pre>"+(e && e.message ? e.message : e)+"</pre>", 'err');
+    }
+  }
+
+  document.getElementById('btnWrite').onclick = writeTest;
+  document.getElementById('btnRead').onclick = readDoc;
+  document.getElementById('btnSeed').onclick = seedBig;
+</script>
+</body>
+</html>
