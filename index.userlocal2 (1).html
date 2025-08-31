@@ -7188,5 +7188,64 @@ render();
     maybeSeed();
   })();
 </script>
+  <script>
+/* ==== Always-On Local Persistence (clients + tasks) ==== */
+(function(){
+  // IMPORTANT: if your file uses a different key, copy it here
+  const STORE_KEY = 'marlow.dashboard.v23';
+
+  function state(){ return (window.state = window.state || {}); }
+
+  // Load local snapshot BEFORE first render
+  (function hydrate(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (snap && typeof snap === 'object') {
+        // Merge instead of replace so existing references remain valid
+        Object.assign(state(), snap);
+      }
+      console.log('[persist] hydrated from localStorage');
+    }catch(e){ console.warn('[persist] hydrate failed', e); }
+  })();
+
+  // Save to localStorage
+  function saveLocal(){
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state()));
+      // Optional UI ping if you have a status element:
+      const s = document.getElementById('saveStatus');
+      if (s){ s.textContent = 'Saved'; setTimeout(()=> s.textContent='', 800); }
+      // For debugging:
+      // console.log('[persist] saved', new Date().toISOString());
+    } catch(e){
+      console.error('[persist] save failed', e);
+    }
+  }
+
+  // Wrap any existing global save()
+  const originalSave = window.save;
+  window.save = function(){
+    try { if (typeof originalSave === 'function') originalSave(); } catch(e){}
+    saveLocal();
+  };
+
+  // Debounced autosave on any user input
+  let t=null;
+  function queue(){ clearTimeout(t); t = setTimeout(saveLocal, 300); }
+  document.addEventListener('input', queue, true);
+  document.addEventListener('change', queue, true);
+
+  // Safety nets
+  setInterval(saveLocal, 2000);           // periodic autosave
+  window.addEventListener('beforeunload', saveLocal);
+
+  // Ensure first render runs after hydrate (if your app exposes render)
+  if (typeof window.render === 'function') {
+    try { window.render(); } catch(e){ console.warn('[persist] render error', e); }
+  }
+})();
+</script>
 </body>
 </html>
