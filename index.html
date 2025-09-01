@@ -7214,9 +7214,7 @@ render();
       window.render();
     }
     /* maybeSeed();  // disabled */
-  })();
-</script>
- <script>
+<script>
 // Live-sync credential fields to state (debounced save)
 (function(){
   const SAVE_DELAY = 250;
@@ -7254,59 +7252,38 @@ render();
 })();
 </script>
 
-<script>
-// Live-sync credential fields to state and save
-(function(){
-  function sync(e){
-    try{
-      const el = e.target; if(!el || !el.id) return;
-      const id = el.id;
-      if(id.startsWith('empPwd_')){
-        const uid = id.slice(7);
-        window.state.users = window.state.users || {};
-        window.state.users[uid] = window.state.users[uid] || {};
-        window.state.users[uid].password = el.value;
-        if(typeof save==='function') save();
-      } else if(id.startsWith('uname_')){
-        const cid = id.slice(6);
-        window.state.clients = window.state.clients || {};
-        window.state.clients[cid] = window.state.clients[cid] || {};
-        window.state.clients[cid].username = el.value;
-        if(typeof save==='function') save();
-      } else if(id.startsWith('pwd_')){
-        const cid2 = id.slice(4);
-        window.state.clients = window.state.clients || {};
-        window.state.clients[cid2] = window.state.clients[cid2] || {};
-        window.state.clients[cid2].password = el.value;
-        if(typeof save==='function') save();
-      }
-    }catch(_){}
-  }
-  document.addEventListener('input', sync, true);
-  document.addEventListener('change', sync, true);
-})();
-</script>
-
-<!-- Supabase client + cloud sync bridge -->
+<!-- Supabase client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Ensure state has the right shape before any render -->
+<script src="./cloud-shape-guard.v1.js"></script>
+
+<!-- Cloud bridge + autosave surfaces -->
 <script src="./cloud-merge-bridge.v2.js"></script>
 <script src="./cloud-hotfix.v2.js"></script>
 <script src="./cloud-post-hooks.v3.js"></script>
 
+<!-- Assignment fairness + manual owner must stick + done/archive must stick -->
 <script src="./cloud-assignment-rules.v3.js"></script>
 <script src="./cloud-task-owner-lock.v1.js"></script>
 <script src="./cloud-task-done-hooks.v1.js"></script>
 
+<!-- Data hardening for scheduler -->
 <script src="./cloud-user-normalize.v1.js"></script>
 <script src="./cloud-schedule-guards.v1.js"></script>
 <script src="./cloud-task-sanitize.v1.js"></script>
 
+<!-- Month stickiness (no “jump to Today”) -->
 <script src="./cloud-calendar-anchor.v4.js"></script>
+
+<!-- Auth helpers (you already have these in your project) -->
 <script src="./cloud-auth-hooks.v1.js"></script>
 <script src="./cloud-auth-restore.v1.js"></script>
+
+<!-- Account persistence for password/employee changes -->
 <script src="./cloud-account-hooks.v1.js"></script>
 
+<!-- Optional watcher -->
 <script src="./cloud-client-watcher.js"></script>
 </body>
 </html>
