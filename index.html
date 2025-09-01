@@ -7216,78 +7216,68 @@ render();
     /* maybeSeed();  // disabled */
 <script>
 <!-- Ensure minimal state shape exists BEFORE any render -->
+<!-- Minimal state shape BEFORE any render -->
 <script>
-  (function(){
-    const s = (window.state = window.state || {});
-    if (!s.users || typeof s.users !== 'object') s.users = {};
-    if (!s.clients || typeof s.clients !== 'object') s.clients = {};
-    if (!Array.isArray(s.tasks)) s.tasks = [];
-  })();
+(function(){
+  const s = (window.state = window.state || {});
+  if (!s.users  || typeof s.users  !== 'object') s.users  = {};
+  if (!s.clients|| typeof s.clients!== 'object') s.clients= {};
+  if (!Array.isArray(s.tasks)) s.tasks = [];
+})();
 </script>
 
-<!-- Live-sync a few credential fields (debounced save). No legacy local saver. -->
+<!-- Debounced field sync (no legacy local saver) -->
 <script>
-  (function(){
-    const SAVE_DELAY = 250;
-    let t = null;
-    const debouncedSave = () => {
-      clearTimeout(t);
-      t = setTimeout(() => { try { if (typeof save === 'function') save(); } catch(_){} }, SAVE_DELAY);
-    };
-
-    function sync(e){
-      try{
-        const el = e.target; if (!el || !el.id) return;
-        const id = el.id;
-        const s = (window.state = window.state || {});
-        if (id.startsWith('empPwd_')){
-          const uid = id.slice(7);
-          s.users = s.users || {};
-          s.users[uid] = s.users[uid] || {};
-          s.users[uid].password = el.value;
-          debouncedSave();
-        } else if (id.startsWith('uname_')){
-          const cid = id.slice(6);
-          s.clients = s.clients || {};
-          s.clients[cid] = s.clients[cid] || {};
-          s.clients[cid].username = el.value;
-          debouncedSave();
-        } else if (id.startsWith('pwd_')){
-          const cid2 = id.slice(4);
-          s.clients = s.clients || {};
-          s.clients[cid2] = s.clients[cid2] || {};
-          s.clients[cid2].password = el.value;
-          debouncedSave();
-        }
-      } catch(_){}
-    }
-    document.addEventListener('input',  sync, true);
-    document.addEventListener('change', sync, true);
-  })();
+(function(){
+  const SAVE_DELAY = 250;
+  let t=null;
+  const debouncedSave = ()=>{ clearTimeout(t); t = setTimeout(()=>{ try{ if (typeof save==='function') save(); }catch(_){}} , SAVE_DELAY); };
+  function sync(e){
+    try{
+      const el = e.target; if(!el || !el.id) return;
+      const id = el.id, s = (window.state = window.state || {});
+      if (id.startsWith('empPwd_')){
+        const uid = id.slice(7);
+        (s.users ||= {})[uid] = (s.users[uid]||{});
+        s.users[uid].password = el.value; debouncedSave();
+      } else if (id.startsWith('uname_')){
+        const cid = id.slice(6);
+        (s.clients ||= {})[cid] = (s.clients[cid]||{});
+        s.clients[cid].username = el.value; debouncedSave();
+      } else if (id.startsWith('pwd_')){
+        const cid2 = id.slice(4);
+        (s.clients ||= {})[cid2] = (s.clients[cid2]||{});
+        s.clients[cid2].password = el.value; debouncedSave();
+      }
+    }catch(_){}
+  }
+  document.addEventListener('input',  sync, true);
+  document.addEventListener('change', sync, true);
+})();
 </script>
 
 <!-- Supabase client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Shape guard: keep state objects/array valid before every render -->
+<!-- Shape guard: keep state valid before each render -->
 <script src="./cloud-shape-guard.v1.js"></script>
 
-<!-- Cloud bridge + autosave surfaces -->
+<!-- Cloud bridge + hooks -->
 <script src="./cloud-merge-bridge.v2.js"></script>
 <script src="./cloud-hotfix.v2.js"></script>
 <script src="./cloud-post-hooks.v3.js"></script>
 
-<!-- Assignment fairness + manual owner must stick + done/archive must stick -->
+<!-- Scheduling / ownership / done -->
 <script src="./cloud-assignment-rules.v3.js"></script>
 <script src="./cloud-task-owner-lock.v1.js"></script>
 <script src="./cloud-task-done-hooks.v1.js"></script>
 
-<!-- Data hardening for scheduler -->
+<!-- Data hardening -->
 <script src="./cloud-user-normalize.v1.js"></script>
 <script src="./cloud-schedule-guards.v1.js"></script>
 <script src="./cloud-task-sanitize.v1.js"></script>
 
-<!-- Month stickiness (no “jump to Today”) -->
+<!-- Month stickiness -->
 <script src="./cloud-calendar-anchor.v4.js"></script>
 
 <!-- Auth helpers -->
