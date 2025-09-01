@@ -7312,9 +7312,28 @@ render();
 
 <!-- Supabase client + cloud sync bridge -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Cloud bridge + autosave surfaces -->
 <script src="./cloud-merge-bridge.v2.js"></script>
+<script src="./cloud-hotfix.v2.js"></script>
 <script src="./cloud-post-hooks.v3.js"></script>
- <script src="./cloud-hotfix.v2.js"></script>
-  <script src="./cloud-client-watcher.js"></script>
+
+<!-- Assignment fairness + manual owner must stick + done/archive must stick -->
+<script src="./cloud-assignment-rules.v3.js"></script>
+<script src="./cloud-task-owner-lock.v1.js"></script>
+<script src="./cloud-task-done-hooks.v1.js"></script>
+
+<!-- Data hardening for scheduler -->
+<script src="./cloud-user-normalize.v1.js"></script>
+<script src="./cloud-schedule-guards.v1.js"></script>
+
+<!-- Month stickiness (no “jump to Today”) -->
+<script src="./cloud-calendar-anchor.v4.js"></script>
+
+<!-- Safety: only seeds Owner if users are missing (prevents login lockout) -->
+<script src="./cloud-account-safety-seed.v1.js"></script>
+
+<!-- Optional watchers/logs you already had -->
+<script src="./cloud-client-watcher.js"></script>
 </body>
 </html>
